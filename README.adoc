@@ -1,0 +1,5 @@
+= realyEspAws
+
+== Introduction
+
+My effort to comunicate with a relay using esp-01 and AWS Iot
