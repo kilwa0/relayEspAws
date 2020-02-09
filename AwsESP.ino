@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h> //https://pubsubclient.knolleary.net/
 #include <WiFiUdp.h>
+#include <ArduinoJson.h>
 #include "certs.h"
 
 WiFiUDP ntpUDP;
@@ -23,16 +24,26 @@ char msg[50];
 int value = 0;
 
 void callback(char* topic, byte* payload, unsigned int length) {
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, payload, length);
 
-  payload[length] = '\0';
+  // Test if parsing succeeds.
+  if (error) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.c_str());
+    return;
+  }
 
-  if (strcmp((char *)payload, "{ \"message\": \"ON\" }") == 0) {
+  const char* message = doc["message"];
+  Serial.println(message);
+
+  if ( strcmp( message, "ON" ) == 0) {
     Serial.write(relON, sizeof(relON));
     Serial.println();
-  } else {
+   } else if ( strcmp(message, "OFF" ) == 0 ) {
     Serial.write(relOFF, sizeof(relOFF));
     Serial.println();
-  }
+   }
 }
 
 void reconnect() {
